@@ -1,0 +1,95 @@
+# inspired by and modified from http://www.huyng.com/posts/sane-color-scheme-for-matplotlib/
+
+##############
+### figure ###
+##############
+
+figure.dpi: 100
+
+#############
+### lines ###
+#############
+lines.linewidth: 2.0 
+
+############
+### font ###
+############
+
+font.size: 10.0
+
+############
+### axes ###
+############
+
+axes.facecolor: F5F5F5
+axes.edgecolor: cccccc
+axes.linewidth: 1
+axes.grid: False
+axes.titlesize: small
+axes.labelsize: small
+axes.labelcolor: 555555
+axes.formatter.useoffset: False
+axes.axisbelow: True       # grid/ticks are below elements (e.g., lines, text)
+
+axes.prop_cycle: cycler('color', ['E24A33', '348ABD', '988ED5', '777777', 'FBC15E', '8EBA42', 'FFB5B8'])
+                   # E24A33 : red
+                   # 348ABD : blue
+                   # 988ED5 : purple
+                   # 777777 : gray
+                   # FBC15E : yellow
+                   # 8EBA42 : green
+                   # FFB5B8 : pink
+
+############
+### tick ###
+############
+
+xtick.color: 555555
+xtick.direction: out
+xtick.labelsize: x-small
+
+ytick.color: 555555
+ytick.direction: out
+ytick.labelsize: x-small
+
+############
+### grid ###
+############
+
+grid.color: D3D3D3
+grid.linestyle: -   
+
+##############
+### figure ###
+##############
+
+figure.facecolor: white
+figure.edgecolor: 0.50
+
+##############
+### legend ###
+##############
+legend.fancybox: True
+legend.facecolor: white 
+legend.shadow: False
+legend.fontsize: small
+
+legend.borderpad     : 0.2    # border whitespace in fontsize units
+legend.markerscale   : 0.8    # the relative size of legend markers vs. original
+# the following dimensions are in axes coords
+legend.labelspacing  : 0.25    # the vertical space between the legend entries in fraction of fontsize
+legend.handlelength  : 2.     # the length of the legend lines in fraction of fontsize
+legend.handleheight  : 0.7     # the height of the legend handle in fraction of fontsize
+legend.handletextpad : 0.5    # the space between the legend line and legend text in fraction of fontsize
+legend.borderaxespad : 0.4   # the border between the axes and legend edge in fraction of fontsize
+legend.columnspacing : 2.    # the border between the axes and legend edge in fraction of fontsize
+legend.frameon       : True   # whether or not to draw a frame around legend
+legend.framealpha    : 0.8    # opacity of of legend frame
+legend.scatterpoints : 3 # number of scatter points
+legend.edgecolor     : inherit   # legend edge color (when None inherits from axes.facecolor)
+
+###############
+### savefig ###
+###############
+
+savefig.transparent : False
