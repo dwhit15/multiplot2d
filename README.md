@@ -18,7 +18,7 @@ We hope to have a Python pip package available soon.
 In the meantime, here is how to install on Linux systems:
 
 ```bash
-git clone https://github.com/dwhit15/Multiplot2D/tree/master
+git clone https://github.com/dwhit15/multiplot2d.git
 cd Multiplot2D
 # add this directory to PYTHONPATH in ~/.bashrc
 echo export PYTHONPATH=${PYTHONPATH}:"$(cd "$(dirname "$1")"; pwd)/$(basename "$1")" >> ~/.bashrc
@@ -28,7 +28,7 @@ source ~/.bashrc
 Newer versions of matplotlib have a powerful formatting feature called stylesheets.
 These are an easy way to improve the look of your plots.
 If you need to update matplotlib, this is how to do that:
-```bash 
+```bash
 sudo pip install --upgrade matplotlib
 rm -r ~/.cache/matplotlib
 ```
