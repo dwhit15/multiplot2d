@@ -4,7 +4,7 @@
 
 Multiplot2D is a wrapper for the matplotlib library that simplifies the development of high quality plots for reports and papers. matplotlib is highly flexible and can do almost anything. However, it's wealth of features and somewhat difficult-to-remember interface make it cumbersome to produce the kinds of plots that are typically needed for dynamics and control work (i.e. figures with many subplots).
 
-Multiplot2D wraps much of the most useful matplotlib functionality into an interface that tries to be consistent and intuitive. It also lends itself well to use in other applications that need to create figures and subplots automatically.
+Multiplot2D wraps many of the most useful matplotlib functionality into an interface that tries to be consistent and intuitive. It also lends itself well to use in other applications that need to create figures and subplots automatically.
 
 The goal of the Multiplot2D interface is to cover about 80% of use cases and minimize lines of code. For cases where especially fine grained control of subplots and figures is required, Multiplot2D can still be used to do most of the work because Multiplot2D offers access to the underlying subplots and figures that are stored inside the Multiplot2D interface. The full matplotlib library can then be applied to these underlying subplots and figures.
 
@@ -28,7 +28,7 @@ source ~/.bashrc
 Newer versions of matplotlib have a powerful formatting feature called stylesheets.
 These are an easy way to improve the look of your plots.
 If you need to update matplotlib, this is how to do that:
-```bash 
+```bash
 sudo pip install --upgrade matplotlib
 rm -r ~/.cache/matplotlib
 ```
