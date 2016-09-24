@@ -6,6 +6,7 @@ Multiplot2D is a wrapper for the matplotlib library that simplifies the developm
 
 Multiplot2D wraps many  of the most useful matplotlib functionality into an interface that tries to be consistent and intuitive. It also lends itself well to use in other applications that need to create figures and subplots automatically.
 
+
 The goal of the Multiplot2D interface is to cover about 80% of use cases and minimize lines of code. For cases where especially fine grained control of subplots and figures is required, Multiplot2D can still be used to do most of the work because Multiplot2D offers access to the underlying subplots and figures that are stored inside the Multiplot2D interface. The full matplotlib library can then be applied to these underlying subplots and figures.
 
 Specifically, this library aims to achieve the following objectives:
