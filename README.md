@@ -30,7 +30,7 @@ Newer versions of matplotlib have a powerful formatting feature called styleshee
 These are an easy way to improve the look of your plots.
 If you need to update matplotlib, this is how to do that:
 ```bash
-sudo pip install --upgrade matplotlib
+pip install --upgrade matplotlib
 rm -r ~/.cache/matplotlib
 ```
 
