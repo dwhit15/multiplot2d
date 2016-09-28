@@ -689,6 +689,10 @@ class MultiPlotter:
         # but must set the amount of space to allocate now
         self.shrink_top_inches = legend_space_inches
 
+    def set_figure_title(self,title,title_args=dict(),title_space_inches=0.3):
+        self.shrink_top_inches = title_space_inches
+        self._figure.suptitle(title,**title_args)
+
     def _target_plots_exist(self,target_plots):
         """
         Private method used to check if the target plot inputs exist.
