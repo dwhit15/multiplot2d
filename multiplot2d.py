@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 
 class MultiPlotter:
 
-    def __init__(self,subplot_grid,size_inches=None,name="figure",
-            subplot_args=dict()):
+    def __init__(self, subplot_grid, size_inches=None, name="figure",
+                 subplot_args=dict()):
         """
         matplotlib wrapper for easily creating subplots.
 
-        This class provides a consistent interface for adding data and plot elements
-        to a series of subplots. It also offers easy access to the underlying
-        figure and subplot(s).
+        This class provides a consistent interface for adding data and plot
+        elements to a series of subplots. It also offers easy access to the
+        underlying figure and subplot(s).
 
         For best results, run plt.ioff() before creating a multiplotter.
 
@@ -26,22 +26,24 @@ class MultiPlotter:
             If `suplot_grid` is a list or tuple of AxesSubplot objects,
             multiplotter will use these subplots instead of creating new ones.
         size_inches : tuple of integers, optional
-            Width, height in inches of the figure. This is particuarlly important
-            for saving figures. If the dpi of the monitor is the not the same
-            as the dpi of the figure, the figure size may not match this
-            physical size onscreen. If no argument is specified, the figure
-            will be sized such that each subplot is 3"x3".
+            Width, height in inches of the figure. This is particuarlly
+            important for saving figures. If the dpi of the monitor is the not
+            the same as the dpi of the figure, the figure size may not match
+            this physical size onscreen. If no argument is specified, the
+            figure will be sized such that each subplot is 3"x3".
         name : str, optional, default: "figure"
             `name` will be the name of the figure window. It will also be the
             default name for other things like filenames.
         subplot_args : keyword arguments, optional, def
-            keyword arguments for matplotlib.pyplot.subplot (http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot)
+            keyword arguments for matplotlib.pyplot.subplot
+            (http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot)
 
         Notes
         -----
-        For complex subplot arrangements, create the subplots using subplot2grid,
-        GridSpec, or another method (http://matplotlib.org/users/gridspec.html),
-        put them into a list, and pass them as `subplot_grid`.
+        For complex subplot arrangements, create the subplots using
+        subplot2grid, GridSpec, or another method
+        (http://matplotlib.org/users/gridspec.html), put them into a list, an
+         pass them as `subplot_grid`.
 
         For simple usage (creating an nxm grid), just pass a list or tuple
         [n,m] as `subplot_grid`.
@@ -52,16 +54,21 @@ class MultiPlotter:
 
         # case 1: subplot_grid is the number of cols of subplots
         if type(subplot_grid) == int:
-            subplot_grid = [1,subplot_grid]
+            subplot_grid = [1, subplot_grid]
             self._grid_shape = subplot_grid
 
         # case 2: subplot_grid is a list of the number of rows and columns,
         # respectively, of subplots
-        if (type(subplot_grid)==list or type(subplot_grid)==tuple) and type(subplot_grid[0]) == int and len(subplot_grid) == 2:
-            if subplot_grid[0] == 0: subplot_grid[0] = 1
-            if size_inches==None:
-                size_inches = [subplot_grid[1]*3,subplot_grid[0]*3]
-            self._figure, plot_list_grid = plt.subplots(*subplot_grid,figsize=size_inches,**subplot_args)
+        if ((type(subplot_grid) == list or type(subplot_grid) == tuple) and
+           type(subplot_grid[0]) == int and len(subplot_grid) == 2):
+
+            if subplot_grid[0] == 0:
+                subplot_grid[0] = 1
+            if size_inches is None:
+                size_inches = [subplot_grid[1]*3, subplot_grid[0]*3]
+            self._figure, plot_list_grid = plt.subplots(*subplot_grid,
+                                                        figsize=size_inches,
+                                                        **subplot_args)
             self._grid_shape = subplot_grid
 
         # case 3: subplot_grid is a sequence of supblots items
@@ -70,12 +77,12 @@ class MultiPlotter:
             try:
                 self._figure = subplot_grid[0].figure
                 plot_list_grid = np.array(subplot_grid)
-                print "TODO: figure out grid shape"
+                print("TODO: figure out grid shape")
             # if that didn't work, print error message and return
             except:
-                print "\nsubplot_grid must be a list of grid dimensions"
-                print "or a list of subplots."
-                print "No subplots have been created.\n"
+                print("\nsubplot_grid must be a list of grid dimensions")
+                print("or a list of subplots.")
+                print("No subplots have been created.\n")
                 self._plot_list = []
                 self._all_plot_indexes = []
                 self._figure = plt.figure(figsize=size_inches)
@@ -99,20 +106,22 @@ class MultiPlotter:
             if type(row) == np.ndarray:
                 for col in row:
                     self._plot_list.append(col)
-            else: self._plot_list.append(row)
+            else:
+                self._plot_list.append(row)
 
-        self._all_plot_indexes=range(len(self._plot_list))
+        self._all_plot_indexes = range(len(self._plot_list))
         # see _prepare_fig_for_display() method for where these are used
-        self._tighten_layout=True
+        self._tighten_layout = True
         # by default, don't shrink from top
         self.shrink_top_inches = 0.0
 
-    def add_data(self,target_plots,x,y,labels=None,line_styles=None,
-            plots_share_data=False):
+    def add_data(self, target_plots, x, y, labels=None, line_styles=None,
+                 plots_share_data=False):
         """
         Plot data on one or more subplots.
 
-        Data can be plotted using optional arguments for labels and line styles.
+        Data can be plotted using optional arguments for labels and line
+        styles.
 
         Parameters
         ----------
@@ -129,7 +138,8 @@ class MultiPlotter:
             however, if no argument is given, the ith dataset will receive a
             label of "data i".
         line_styles : tuple of keyword arguments, optional
-            Keyword arguments for matplotlib.lines (http://matplotlib.org/api/lines_api.html)
+            Keyword arguments for matplotlib.lines
+            (http://matplotlib.org/api/lines_api.html)
             Default is empty dictionary, which means that default styles will
             be used.
         plots_share_data : boolean, optional, default: False
@@ -164,8 +174,8 @@ class MultiPlotter:
         For the case where the number of items in `target_plots` equals
         the number of columns in `y`, this function assumes that the datasets
         should be distributed, and not shared, among the subplots indicated in
-        `target_plots`. If it is desirable that each subplot show every dataset,
-        `plots_share_data` must be True.
+        `target_plots`. If it is desirable that each subplot show every
+        dataset, `plots_share_data` must be True.
 
         The `labels` and `line_styles` work in a similiar way. If one item is
         entered, it will be used for all datasets. If more than one item is
@@ -177,7 +187,8 @@ class MultiPlotter:
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
         num_target_plots = len(target_plots)
 
         shape_x = np.shape(x)
@@ -206,14 +217,14 @@ class MultiPlotter:
         ycols = shape_y[1]
         # x and y must have the same number of rows
         if xrows != yrows:
-            print "\nx and y must have the same number of rows.\n"
+            print("\nx and y must have the same number of rows.\n")
             return -1
         # if x is a matrix, it's shape must match y
         if xcols != 1 and xcols != ycols:
-            print "\nx must be a vector or of the same shape as y.\n"
+            print("\nx must be a vector or of the same shape as y.\n")
             return -1
 
-        if labels==None:
+        if labels is None:
             labels = ["data " + str(i+1) for i in range(ycols)]
             # labels = ["data " + str(i+1) for i in range(ycols)]
         elif type(labels) == str:
@@ -223,27 +234,30 @@ class MultiPlotter:
             labels = [labels[0]]*ycols
             # labels = [labels[0] + " " + str(i+1) for i in range(ycols)]
         elif len(labels) < ycols:
-            print "\nThe number of cols in data matrix y is %d." %ycols
-            print "%d labels were received. There must be one" % len(labels)
-            print "label for every col in data matrix y.\n"
+            print("\nThe number of cols in data matrix y is %d." % ycols)
+            print("%d labels were received. There must be one" % len(labels))
+            print("label for every col in data matrix y.\n")
             return -1
 
-        if line_styles==None:
+        if line_styles is None:
             line_styles = [dict()]*ycols
         # only one line style inputted
         # this one style will be used for every dataset
         elif type(line_styles) == dict:
             line_styles = [line_styles]*ycols
-        elif len(line_styles)==1:
+        elif len(line_styles) == 1:
             line_styles = line_styles*ycols
         elif len(line_styles) < ycols:
-            print "\nThe number of cols in data matrix y is %d." %ycols
-            print "%d line styles were received. There must be one" % len(line_styles)
-            print "line style for every col in data matrix y"
-            print "or one line style which will be shared by all lines.\n"
+            print("\nThe number of cols in data matrix y is %d." % ycols)
+            print("%d line styles were received. There must be one" % len(
+                line_styles))
+            print("line style for every col in data matrix y")
+            print("or one line style which will be shared by all lines.\n")
+
             return -1
 
-        if num_target_plots != ycols: plots_share_data = True
+        if num_target_plots != ycols:
+            plots_share_data = True
 
         # the ith item in line_list corresponds to the ith subplot
         # the kth item the ith item corresponds to the kth plotted line
@@ -252,29 +266,34 @@ class MultiPlotter:
         # if all the conditions are satisfied, plot the data
         for plot_counter, plot_id in enumerate(target_plots):
             # all the datasets will be put on this plot
-            if plots_share_data == True:
+            if plots_share_data is True:
                 data_for_this_plot = y
                 labels_for_this_plot = labels
                 line_styles_for_this_plot = line_styles
 
             # only one dataset will be put on this plot
             else:
-                data_for_this_plot = y[:,plot_counter:plot_counter+1]
+                data_for_this_plot = y[:, plot_counter:plot_counter+1]
                 labels_for_this_plot = [labels[plot_counter]]
                 line_styles_for_this_plot = [line_styles[plot_counter]]
 
             data_set_index = 0
-            iterate_over = zip(data_for_this_plot.T,labels_for_this_plot,line_styles_for_this_plot)
-            for plot_ydata,label,line_style in iterate_over:
-                if xcols == 1: plot_xdata = x.T
-                else: plot_xdata = x.T[data_set_index]
+            iterate_over = zip(data_for_this_plot.T, labels_for_this_plot,
+                               line_styles_for_this_plot)
+            for plot_ydata, label, line_style in iterate_over:
+                if xcols == 1:
+                    plot_xdata = x.T
+                else:
+                    plot_xdata = x.T[data_set_index]
                 plot_item = self._plot_list[plot_id]
-                line_list[plot_counter].append(plot_item.plot(plot_xdata.flatten(), plot_ydata.flatten(),label=label,**line_style )[0])
+                line_list[plot_counter].append(plot_item.plot(
+                    plot_xdata.flatten(), plot_ydata.flatten(), label=label,
+                    **line_style)[0])
                 data_set_index += 1
 
         return line_list
 
-    def set_plot_titles(self,target_plots,plot_titles):
+    def set_plot_titles(self, target_plots, plot_titles):
         """
         Set the title of one or more subplots.
 
@@ -288,10 +307,11 @@ class MultiPlotter:
             plots will receive the same title. Otherwise, there should be one
             title for each target plot.
         """
-        ret_error = [-1,-1]
-         # ensure that the target plots are valid
+        ret_error = [-1, -1]
+        # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return ret_error
+        if ret is False:
+            return ret_error
         num_target_plots = len(target_plots)
 
         # turn plot_titles into lists if they are not
@@ -300,19 +320,21 @@ class MultiPlotter:
 
         len_plot_titles = len(plot_titles)
         if len_plot_titles != 1 and len_plot_titles < num_target_plots:
-            print "\n%d plot titles were received." %len_plot_titles
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one title for every plot"
-            print "or only one title which will be shared by all plots.\n"
+            print("\n%d plot titles were received." % len_plot_titles)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one title for every plot")
+            print("or only one title which will be shared by all plots.\n")
             return -1
 
         for plot_counter, plot_id in enumerate(target_plots):
-            if len_plot_titles==1: title = plot_titles[0]
-            else: title = plot_titles[plot_counter]
+            if len_plot_titles == 1:
+                title = plot_titles[0]
+            else:
+                title = plot_titles[plot_counter]
 
             self._plot_list[plot_id].set_title(title)
 
-    def set_axis_titles(self,target_plots,x_labels,y_labels):
+    def set_axis_titles(self, target_plots, x_labels, y_labels):
         """
         Set the axis titles of one or more subplots.
 
@@ -336,7 +358,8 @@ class MultiPlotter:
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
         num_target_plots = len(target_plots)
 
         # turn xlables and y_labels into lists if they are not
@@ -348,32 +371,38 @@ class MultiPlotter:
         len_x_labels = len(x_labels)
         len_y_labels = len(y_labels)
         if len_x_labels != 1 and len_x_labels < num_target_plots:
-            print "\n%d labels for x-axis were received." %len_x_labels
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one label for every plot"
-            print "or only one label which will be shared by all plots.\n"
+            print("\n%d labels for x-axis were received." % len_x_labels)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one label for every plot")
+            print("or only one label which will be shared by all plots.\n")
             return -1
 
         if len_y_labels != 1 and len_y_labels < num_target_plots:
-            print "\n%d labels for y-axis were received." %len_y_labels
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one label for every plot"
-            print "or only one label which will be shared by all plots.\n"
+            print("\n%d labels for y-axis were received." % len_y_labels)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one label for every plot")
+            print("or only one label which will be shared by all plots.\n")
             return -1
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
 
-            if len_x_labels==1: x_title = x_labels[0]
-            else: x_title = x_labels[plot_counter]
+            if len_x_labels == 1:
+                x_title = x_labels[0]
+            else:
+                x_title = x_labels[plot_counter]
 
-            if len_y_labels==1: y_title = y_labels[0]
-            else: y_title = y_labels[plot_counter]
+            if len_y_labels == 1:
+                y_title = y_labels[0]
+            else:
+                y_title = y_labels[plot_counter]
 
-            if x_title != '': plot_item.set_xlabel(x_title)
-            if y_title != '': plot_item.set_ylabel(y_title)
+            if x_title != '':
+                plot_item.set_xlabel(x_title)
+            if y_title != '':
+                plot_item.set_ylabel(y_title)
 
-    def add_legend(self, target_plots,legend_args = dict()):
+    def add_legend(self, target_plots, legend_args=dict()):
         """
         Add a legend to one or more plots.
 
@@ -383,7 +412,8 @@ class MultiPlotter:
             Indexes, in row-major order, of the plots to be affected by this
             function.
         legend_args : keyword arguments, optional
-            Keyword arguments for matplotlib.axes.Axes.legend (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend)
+            Keyword arguments for matplotlib.axes.Axes.legend
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend)
 
         Returns
         -------
@@ -395,7 +425,8 @@ class MultiPlotter:
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         num_target_plots = len(target_plots)
-        if ret == False: return [-1]*num_target_plots
+        if ret is False:
+            return [-1]*num_target_plots
 
         legend_items = []
         for plot_counter, plot_id in enumerate(target_plots):
@@ -404,7 +435,7 @@ class MultiPlotter:
 
         return legend_items
 
-    def add_grid(self,target_plots, grid_args = dict()):
+    def add_grid(self, target_plots, grid_args=dict()):
         """
         Add a grid to one or more plots.
 
@@ -414,7 +445,8 @@ class MultiPlotter:
             Indexes, in row-major order, of the plots to be affected by this
             function.
         grid_args : keyword arguments, optional
-            Keyword arguments for matplotlib.axes.Axes.grid (http://matplotlib.org/api/axis_api.html)
+            Keyword arguments for matplotlib.axes.Axes.grid
+            (http://matplotlib.org/api/axis_api.html)
 
         Returns
         -------
@@ -426,7 +458,8 @@ class MultiPlotter:
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         num_target_plots = len(target_plots)
-        if ret == False: return [-1]*num_target_plots
+        if ret is False:
+            return [-1]*num_target_plots
 
         grid_items = []
         for plot_counter, plot_id in enumerate(target_plots):
@@ -437,7 +470,8 @@ class MultiPlotter:
     def get_plots(self, target_plots):
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
 
         return_plots = []
         for plot_id in target_plots:
@@ -445,10 +479,11 @@ class MultiPlotter:
 
         return return_plots
 
-    def scale_y_limits(self,target_plots,scale_high=1.05,scale_low=1.05):
+    def scale_y_limits(self, target_plots, scale_high=1.05, scale_low=1.05):
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
@@ -457,26 +492,30 @@ class MultiPlotter:
             y_amp = (y_lim[1]-y_lim[0])/2
             y_mean = (y_lim[1]+y_lim[0])/2
             y_low = y_mean - scale_low*y_amp
-            y_high= y_mean + scale_high*y_amp
-            plot_item.set_ylim(y_low,y_high)
+            y_high = y_mean + scale_high*y_amp
+            plot_item.set_ylim(y_low, y_high)
 
     # TODO all the usual error checking
-    def set_limits(self,target_plots,x_limits=[],y_limits=[]):
+    def set_limits(self, target_plots, x_limits=[], y_limits=[]):
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
         num_target_plots = len(target_plots)
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
 
-            if y_limits != []: plot_item.set_ylim(y_limits[plot_counter])
-            if x_limits != []: plot_item.set_xlim(x_limits[plot_counter])
+            if y_limits != []:
+                plot_item.set_ylim(y_limits[plot_counter])
+            if x_limits != []:
+                plot_item.set_xlim(x_limits[plot_counter])
 
-    def _scale_plots(self,target_plots,x_scale=1.,y_scale=1.):
+    def _scale_plots(self, target_plots, x_scale=1., y_scale=1.):
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
         num_target_plots = len(target_plots)
 
         # turn x_scale and y_scale into lists if they are not
@@ -488,38 +527,43 @@ class MultiPlotter:
         len_x_scale = len(x_scale)
         len_y_scale = len(y_scale)
         if len_x_scale != 1 and len_x_scale < num_target_plots:
-            print "\n%d scale factors for x-axis were received." %len_x_scale
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one scale factor for every plot"
-            print "or only one factor which will be shared by all plots.\n"
+            print("\n%d scale factors for x-axis were received." % len_x_scale)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one scale factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
             return -1
 
         if len_y_scale != 1 and len_y_scale < num_target_plots:
-            print "\n%d scale factors for y-axis were received." %len_y_scale
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one scale factor for every plot"
-            print "or only one factor which will be shared by all plots.\n"
+            print("\n%d scale factors for y-axis were received." % len_y_scale)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one scale factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
             return -1
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
 
-            if len_x_scale==1: scale_x = x_scale[0]
-            else: scale_x = x_scale[plot_counter]
+            if len_x_scale == 1:
+                scale_x = x_scale[0]
+            else:
+                scale_x = x_scale[plot_counter]
 
-            if len_y_scale==1: scale_y = y_scale[0]
-            else: scale_y = y_scale[plot_counter]
+            if len_y_scale == 1:
+                scale_y = y_scale[0]
+            else:
+                scale_y = y_scale[plot_counter]
 
             box = plot_item.get_position()
             plot_item.set_position([box.x0, box.y0,
-                 box.width*scale_x, box.height*scale_y])
+                                    box.width*scale_x, box.height*scale_y])
 
-        self._tighten_layout=False
+        self._tighten_layout = False
 
-    def _shift_plots(self,target_plots,x_shift=0.,y_shift=0.):
+    def _shift_plots(self, target_plots, x_shift=0., y_shift=0.):
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
-        if ret == False: return -1
+        if ret is False:
+            return -1
         num_target_plots = len(target_plots)
 
         # turn x_scale and y_scale into lists if they are not
@@ -531,33 +575,38 @@ class MultiPlotter:
         len_x_shift = len(x_shift)
         len_y_shift = len(y_shift)
         if len_x_shift != 1 and len_x_shift < num_target_plots:
-            print "\n%d shift factors for x-axis were received." %len_x_shift
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one shift factor for every plot"
-            print "or only one factor which will be shared by all plots.\n"
+            print("\n%d shift factors for x-axis were received." % len_x_shift)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one shift factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
             return -1
 
         if len_y_shift != 1 and len_y_shift < num_target_plots:
-            print "\n%d shift factors for y-axis were received." %len_y_shift
-            print "%d target plots were received." %num_target_plots
-            print "There either must be one shift factor for every plot"
-            print "or only one factor which will be shared by all plots.\n"
+            print("\n%d shift factors for y-axis were received." % len_y_shift)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one shift factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
             return -1
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
 
-            if len_x_shift==1: shift_x = x_shift[0]
-            else: shift_x = x_shift[plot_counter]
+            if len_x_shift == 1:
+                shift_x = x_shift[0]
+            else:
+                shift_x = x_shift[plot_counter]
 
-            if len_y_shift==1: shift_y = y_shift[0]
-            else: shift_y = y_shift[plot_counter]
+            if len_y_shift == 1:
+                shift_y = y_shift[0]
+            else:
+                shift_y = y_shift[plot_counter]
 
             box = plot_item.get_position()
-            plot_item.set_position([box.x0+box.width*shift_x, box.y0+box.height*shift_y,
-                 box.width, box.height])
+            plot_item.set_position([box.x0+box.width*shift_x,
+                                    box.y0+box.height*shift_y,
+                                    box.width, box.height])
 
-        self._tighten_layout=False
+        self._tighten_layout = False
 
     def get_figure(self):
         """
@@ -571,8 +620,8 @@ class MultiPlotter:
         self._prepare_fig_for_display()
         return self._figure
 
-    def save(self,filename=None,save_directory=os.getcwd(),save_args=dict(),
-        fig_alpha = 1.0, plot_alpha=1.0,pdf=None):
+    def save(self, filename=None, save_directory=os.getcwd(), save_args=dict(),
+             fig_alpha=1.0, plot_alpha=1.0, pdf=None):
         """
         Save the figure.
 
@@ -590,15 +639,16 @@ class MultiPlotter:
             the name of the multiplotter instance (this was set on
             initialization). Don't include the file extension;
             instead pass the file extension you want as the value of the
-            keyword "format" in the `save_args` dictionary (by default, the file
-            will be a .png). In addition, do not include the directory;
+            keyword "format" in the `save_args` dictionary (by default, the
+            file will be a .png). In addition, do not include the directory;
             it's better to specify this using `save_directory`.
         save_directory : string, optional
             A relative or absolute file path where you want to save the image.
             If not specified, the file will be saved in the current working
             directory.
         save_args : keyword arguments, optional
-            Keyword arguments for matplotlib.figure.Figure.savefig (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.savefig).
+            Keyword arguments for matplotlib.figure.Figure.savefig
+            (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.savefig).
         fig_alpha : float between 0 and 1, optional
             Transparency of the background of figure but NOT the background of
             the actual plots. 1 means fully opaque, 0 means fully transparent.
@@ -614,10 +664,11 @@ class MultiPlotter:
         try:
             os.chdir(save_directory)
         except OSError:
-            print "\nSave directory does not exist.\n"
+            print("\nSave directory does not exist.\n")
             return -1
 
-        if "dpi" not in save_args: save_args["dpi"] = 300
+        if "dpi" not in save_args:
+            save_args["dpi"] = 300
 
         self._prepare_fig_for_display()
 
@@ -627,18 +678,20 @@ class MultiPlotter:
         for plot_item in self._plot_list:
             plot_item.patch.set_alpha(plot_alpha)
 
-
-        if pdf==None:
-            if "format" not in save_args: save_args["format"] = "png"
-            if filename==None:
-                filename = self._figure.canvas.get_window_title() + "." + save_args["format"]
-            self._figure.savefig(filename,facecolor=self._figure.get_facecolor(),
-                                **save_args)
+        if pdf is None:
+            if "format" not in save_args:
+                save_args["format"] = "png"
+            if filename is None:
+                filename = self._figure.canvas.get_window_title() + "."
+                + save_args["format"]
+            self._figure.savefig(filename,
+                                 facecolor=self._figure.get_facecolor(),
+                                 **save_args)
         else:
-            self._figure.savefig(pdf,format='pdf',**save_args)
+            self._figure.savefig(pdf, format='pdf', **save_args)
         os.chdir(current_drive)
 
-    def display(self,plot_args=dict()):
+    def display(self, plot_args=dict()):
         """
         Show the figure.
 
@@ -648,12 +701,13 @@ class MultiPlotter:
         Parameters
         ----------
         plot_args : keyword arguments, optional
-            Keyword arguments for matplotlib.figure.Figure.show (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
+            Keyword arguments for matplotlib.figure.Figure.show
+            (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
         """
         self._prepare_fig_for_display()
         self._figure.show(**plot_args)
 
-    def add_figure_legend(self,legend_args=dict(),legend_space_inches=0.5,
+    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
                           labels=None):
         """
         Add a figure legend.
@@ -661,9 +715,11 @@ class MultiPlotter:
         Parameters
         ----------
         legend_args : keyword arguments, optional
-            Keyword arguments for matplotlib.axes.Axes.legend (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
+            Keyword arguments for matplotlib.axes.Axes.legend
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
         legend_whitespace_inches : float, default: 0.5
-            Amount of space, in inches, for the legend at the top of the figure.
+            Amount of space, in inches, for the legend at the top of the
+            figure.
         labels : string or tuple of strings, optional
             The items in `labels` will be used to populate the figure legend.
             If not provided, the labels set while "adding data" will be used.
@@ -674,38 +730,39 @@ class MultiPlotter:
 
         # get list of lines for the first plot and their associated labels
         # for now only lines in first plot will be used to create the legend
-        plot_lines=self.get_plots(0)[0].lines
+        plot_lines = self.get_plots(0)[0].lines
         line_label_list = []
-        if labels == None:
-            line_label_list = [line.get_label() for line in plot_lines ]
+        if labels is None:
+            line_label_list = [line.get_label() for line in plot_lines]
         else:
             line_label_list = labels
 
         # create the legend
-        self._figure.legend(plot_lines,line_label_list,**legend_args)
+        self._figure.legend(plot_lines, line_label_list, **legend_args)
 
         # will need to allocate space for the legend
         # this will be taken care of in _prepare_fig_for_display(),
         # but must set the amount of space to allocate now
         self.shrink_top_inches = legend_space_inches
 
-    def _target_plots_exist(self,target_plots):
+    def _target_plots_exist(self, target_plots):
         """
         Private method used to check if the target plot inputs exist.
         """
         if type(target_plots) == int:
             target_plots = [target_plots]
-        elif target_plots=="all":
-            target_plots=self._all_plot_indexes
-        elif type(target_plots) != list and type(target_plots) != tuple and target_plots != "all":
-            print "\ntarget_plots must be an int, list, tuple, or 'all'.\n"
+        elif target_plots == "all":
+            target_plots = self._all_plot_indexes
+        elif (type(target_plots) != list and type(target_plots) != tuple and
+              target_plots != "all"):
+            print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
             return 0, target_plots
 
         for plot_id in target_plots:
             try:
                 self._plot_list[plot_id]
             except IndexError:
-                print "\n%d is not a valid plot index.\n" %plot_id
+                print("\n%d is not a valid plot index.\n" % plot_id)
                 return 0, target_plots
         return 1, target_plots
 
@@ -713,7 +770,7 @@ class MultiPlotter:
         """
         Ensure that the spacing of the plots and other elements look "good".
         """
-        if self._tighten_layout==True:
+        if self._tighten_layout is True:
             # try to format the plot "nicely"
             # nicely means that all labels and titles are well spaced and do
             # not intersect
@@ -726,22 +783,28 @@ class MultiPlotter:
                 self._figure.tight_layout()
                 if self.shrink_top_inches != 0:
                     # add some space to the top of the plot
-                    self._figure.set_size_inches(self._figure.get_size_inches()+np.array([0.,self.shrink_top_inches]))
+                    self._figure.set_size_inches(
+                        self._figure.get_size_inches() + np.array(
+                            [0., self.shrink_top_inches]))
 
                     # find percentage of the fig height that we need to
                     # shift and scale the plots
                     fig_height = float(self._figure.get_size_inches()[1])
-                    shrink_top_ratio = self.shrink_top_inches / (fig_height) / 1.
+                    shrink_top_ratio = self.shrink_top_inches / fig_height / 1.
 
                     num_rows = self._grid_shape[0]
                     # height of first plot; assume each plot has same height
-                    plot_height = float(self._plot_list[0].get_position().height) * fig_height
+                    plot_height = (
+                        float(self._plot_list[0].get_position().height) *
+                        fig_height)
                     # amount each plot needs to be shrunk
-                    reduce_plot_height_inches = self.shrink_top_inches *1. / num_rows
-                    reduce_plot_height_ratio = reduce_plot_height_inches / plot_height
+                    reduce_plot_height_inches = (self.shrink_top_inches * 1. /
+                                                 num_rows)
+                    reduce_plot_height_ratio = (reduce_plot_height_inches /
+                                                plot_height)
 
                     # scale each plot the same
-                    self._scale_plots("all",1.,1.-reduce_plot_height_ratio)
+                    self._scale_plots("all", 1., 1. - reduce_plot_height_ratio)
 
                     # shift the plots different amounts dependong on their row
                     num_plots = len(self._plot_list)
@@ -749,7 +812,9 @@ class MultiPlotter:
                     # assign a shift amount based on each plots row
                     # don't shift the bottom row at all
                     # shift the top row the most
-                    shift_list = [-shrink_top_ratio*(num_rows-plot_id/num_cols-1) for plot_id in range(num_plots)]
-                    self._shift_plots("all",0,shift_list)
+                    shift_list = [-shrink_top_ratio *
+                                  (num_rows-plot_id/num_cols-1) for plot_id
+                                  in range(num_plots)]
+                    self._shift_plots("all", 0, shift_list)
             except:
-                print "\nCannot automatically format subplot layout.\n"
+                print("\nCannot automatically format subplot layout.\n")
