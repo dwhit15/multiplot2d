@@ -753,12 +753,13 @@ class MultiPlotter:
         """
         Private method used to check if the target plot inputs exist.
         """
-        if type(target_plots) == int:
+        if isinstance(target_plots, int):
             target_plots = [target_plots]
         elif target_plots == "all":
             target_plots = self._all_plot_indexes
         elif (type(target_plots) != list and type(target_plots) != tuple and
               target_plots != "all"):
+            import pdb;pdb.set_trace()
             print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
             return 0, target_plots
 

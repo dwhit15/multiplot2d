@@ -37,7 +37,7 @@ x_plotter = MultiPlotter(2, name="using x")
 x_plotter.add_data(0, t_col_vector, y_2col_matrix, labels=["x, y1", "x, y2"])
 x_plotter.add_data(1, t_2col_matrix, y_2col_matrix,
                    labels=["x1, y1", "x2, y2"])
-x_plotter.add_legend(range(2))
+x_plotter.add_legend(list(range(2)))
 x_plotter.display()
 
 # one plot with 9 datasets
