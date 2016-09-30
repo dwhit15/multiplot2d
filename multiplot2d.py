@@ -495,6 +495,181 @@ class MultiPlotter:
             y_high = y_mean + scale_high*y_amp
             plot_item.set_ylim(y_low, y_high)
 
+
+    def get_figure(self):
+        """
+        Return the underlying matplotlib figure of this multiplotter instance.
+
+        Returns
+        -------
+        figure : matplotlib.figure.Figure
+            The the underlying matplotlib figure of this multiplotter instance.
+        """
+        self._prepare_fig_for_display()
+        return self._figure
+
+    def save(self, filename=None, save_directory=os.getcwd(), save_args=dict(),
+             fig_alpha=1.0, plot_alpha=1.0, pdf=None):
+        """
+        Save the figure.
+
+        Before saving the figure, the plot and plot element spacing will be
+        optimized to avoid plots or elements from intersecting each other.
+        The figure will be saved at the size (in inches) specified when the
+        multiplotter was initialized.
+
+        Although there are many arguments, none of them are required.
+
+        Parameters
+        ----------
+        filename : string, optional
+            Name of the file to save. If not specified, the file will be given
+            the name of the multiplotter instance (this was set on
+            initialization). Don't include the file extension;
+            instead pass the file extension you want as the value of the
+            keyword "format" in the `save_args` dictionary (by default, the
+            file will be a .png). In addition, do not include the directory;
+            it's better to specify this using `save_directory`.
+        save_directory : string, optional
+            A relative or absolute file path where you want to save the image.
+            If not specified, the file will be saved in the current working
+            directory.
+        save_args : keyword arguments, optional
+            Keyword arguments for matplotlib.figure.Figure.savefig
+            (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.savefig).
+        fig_alpha : float between 0 and 1, optional
+            Transparency of the background of figure but NOT the background of
+            the actual plots. 1 means fully opaque, 0 means fully transparent.
+        plot_alpha : float between 0 and 1, optional
+            Transparency of the background of plots but NOT the background of
+            the area surrounding the plots. 1 means fully opaque,
+            0 means fully transparent.
+        pdf : matplotlib.backends.backend_pdf.PdfPages, optional
+            Save the figure to a PDF. Multiple figures from
+            multiple multiplotter instances can save to the same PDF.
+        """
+        current_drive = os.getcwd()
+        try:
+            os.chdir(save_directory)
+        except OSError:
+            print("\nSave directory does not exist.\n")
+            return -1
+
+        if "dpi" not in save_args:
+            save_args["dpi"] = 300
+
+        self._prepare_fig_for_display()
+
+        # set figure background transparency
+        self._figure.patch.set_alpha(fig_alpha)
+        # set subplot transparency
+        for plot_item in self._plot_list:
+            plot_item.patch.set_alpha(plot_alpha)
+
+        if pdf is None:
+            if "format" not in save_args:
+                save_args["format"] = "png"
+            if filename is None:
+                filename = self._figure.canvas.get_window_title() + "."
+                + save_args["format"]
+            self._figure.savefig(filename,
+                                 facecolor=self._figure.get_facecolor(),
+                                 **save_args)
+        else:
+            self._figure.savefig(pdf, format='pdf', **save_args)
+        os.chdir(current_drive)
+
+    def display(self, plot_args=dict()):
+        """
+        Show the figure.
+
+        Before showing the figure, the plot and plot element spacing will be
+        optimized to avoid plots or elements from intersecting each other.
+
+        Parameters
+        ----------
+        plot_args : keyword arguments, optional
+            Keyword arguments for matplotlib.figure.Figure.show
+            (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
+        """
+        self._prepare_fig_for_display()
+        self._figure.show(**plot_args)
+
+    def _target_plots_exist(self,target_plots):
+        """
+        Private method used to check if the target plot inputs exist.
+        """
+        if isinstance(target_plots, int):
+            target_plots = [target_plots]
+        elif target_plots == "all":
+            target_plots = self._all_plot_indexes
+        elif (type(target_plots) != list and type(target_plots) != tuple and
+              target_plots != "all"):
+            import pdb;pdb.set_trace()
+            print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
+            return 0, target_plots
+
+        for plot_id in target_plots:
+            try:
+                self._plot_list[plot_id]
+            except IndexError:
+                print("\n%d is not a valid plot index.\n" % plot_id)
+                return 0, target_plots
+        return 1, target_plots
+
+    def _prepare_fig_for_display(self):
+        """
+        Ensure that the spacing of the plots and other elements look "good".
+        """
+        if self._tighten_layout is True:
+            # try to format the plot "nicely"
+            # nicely means that all labels and titles are well spaced and do
+            # not intersect
+            # this is accomplished using tight_layout()
+            # but this function does not format figure legends
+            # in order to account for this, we will run tight_layout,
+            # add some space at the top for the legend, then shift and scale
+            # everything down
+            try:
+                self._figure.tight_layout()
+                if self.shrink_top_inches != 0:
+                    # add some space to the top of the plot
+                    self._figure.set_size_inches(
+                        self._figure.get_size_inches() + np.array(
+                            [0., self.shrink_top_inches]))
+
+                    # find percentage of the fig height that we need to
+                    # shift and scale the plots
+                    fig_height = float(self._figure.get_size_inches()[1])
+                    shrink_top_ratio = self.shrink_top_inches / fig_height / 1.
+
+                    num_rows = self._grid_shape[0]
+                    # height of first plot; assume each plot has same height
+                    plot_height = (
+                        float(self._plot_list[0].get_position().height) *
+                        fig_height)
+                    # amount each plot needs to be shrunk
+                    reduce_plot_height_inches = (self.shrink_top_inches * 1. /
+                                                 num_rows)
+                    reduce_plot_height_ratio = (reduce_plot_height_inches /
+                                                plot_height)
+
+                    # scale each plot the same
+                    self._scale_plots("all", 1., 1. - reduce_plot_height_ratio)
+
+                    # shift the plots different amounts dependong on their row
+                    num_plots = len(self._plot_list)
+                    num_cols = self._grid_shape[1]
+                    # assign a shift amount based on each plots row
+                    # don't shift the bottom row at all
+                    # shift the top row the most
+                    shift_list = [-shrink_top_ratio *
+                                  (num_rows-plot_id/num_cols-1) for plot_id
+                                  in range(num_plots)]
+                    self._shift_plots("all", 0, shift_list)
+            except:
+                print("\nCannot automatically format subplot layout.\n")
+
     # TODO all the usual error checking
     def set_limits(self, target_plots, x_limits=[], y_limits=[]):
         # ensure that the target plots are valid
@@ -608,105 +783,6 @@ class MultiPlotter:
 
         self._tighten_layout = False
 
-    def get_figure(self):
-        """
-        Return the underlying matplotlib figure of this multiplotter instance.
-
-        Returns
-        -------
-        figure : matplotlib.figure.Figure
-            The the underlying matplotlib figure of this multiplotter instance.
-        """
-        self._prepare_fig_for_display()
-        return self._figure
-
-    def save(self, filename=None, save_directory=os.getcwd(), save_args=dict(),
-             fig_alpha=1.0, plot_alpha=1.0, pdf=None):
-        """
-        Save the figure.
-
-        Before saving the figure, the plot and plot element spacing will be
-        optimized to avoid plots or elements from intersecting each other.
-        The figure will be saved at the size (in inches) specified when the
-        multiplotter was initialized.
-
-        Although there are many arguments, none of them are required.
-
-        Parameters
-        ----------
-        filename : string, optional
-            Name of the file to save. If not specified, the file will be given
-            the name of the multiplotter instance (this was set on
-            initialization). Don't include the file extension;
-            instead pass the file extension you want as the value of the
-            keyword "format" in the `save_args` dictionary (by default, the
-            file will be a .png). In addition, do not include the directory;
-            it's better to specify this using `save_directory`.
-        save_directory : string, optional
-            A relative or absolute file path where you want to save the image.
-            If not specified, the file will be saved in the current working
-            directory.
-        save_args : keyword arguments, optional
-            Keyword arguments for matplotlib.figure.Figure.savefig
-            (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.savefig).
-        fig_alpha : float between 0 and 1, optional
-            Transparency of the background of figure but NOT the background of
-            the actual plots. 1 means fully opaque, 0 means fully transparent.
-        plot_alpha : float between 0 and 1, optional
-            Transparency of the background of plots but NOT the background of
-            the area surrounding the plots. 1 means fully opaque,
-            0 means fully transparent.
-        pdf : matplotlib.backends.backend_pdf.PdfPages, optional
-            Save the figure to a PDF. Multiple figures from
-            multiple multiplotter instances can save to the same PDF.
-        """
-        current_drive = os.getcwd()
-        try:
-            os.chdir(save_directory)
-        except OSError:
-            print("\nSave directory does not exist.\n")
-            return -1
-
-        if "dpi" not in save_args:
-            save_args["dpi"] = 300
-
-        self._prepare_fig_for_display()
-
-        # set figure background transparency
-        self._figure.patch.set_alpha(fig_alpha)
-        # set subplot transparency
-        for plot_item in self._plot_list:
-            plot_item.patch.set_alpha(plot_alpha)
-
-        if pdf is None:
-            if "format" not in save_args:
-                save_args["format"] = "png"
-            if filename is None:
-                filename = self._figure.canvas.get_window_title() + "."
-                + save_args["format"]
-            self._figure.savefig(filename,
-                                 facecolor=self._figure.get_facecolor(),
-                                 **save_args)
-        else:
-            self._figure.savefig(pdf, format='pdf', **save_args)
-        os.chdir(current_drive)
-
-    def display(self, plot_args=dict()):
-        """
-        Show the figure.
-
-        Before showing the figure, the plot and plot element spacing will be
-        optimized to avoid plots or elements from intersecting each other.
-
-        Parameters
-        ----------
-        plot_args : keyword arguments, optional
-            Keyword arguments for matplotlib.figure.Figure.show
-            (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
-        """
-        self._prepare_fig_for_display()
-        self._figure.show(**plot_args)
-
     def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
                           labels=None):
         """
@@ -748,78 +824,3 @@ class MultiPlotter:
     def set_figure_title(self,title,title_args=dict(),title_space_inches=0.3):
         self.shrink_top_inches = title_space_inches
         self._figure.suptitle(title,**title_args)
-
-    def _target_plots_exist(self,target_plots):
-        """
-        Private method used to check if the target plot inputs exist.
-        """
-        if isinstance(target_plots, int):
-            target_plots = [target_plots]
-        elif target_plots == "all":
-            target_plots = self._all_plot_indexes
-        elif (type(target_plots) != list and type(target_plots) != tuple and
-              target_plots != "all"):
-            import pdb;pdb.set_trace()
-            print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
-            return 0, target_plots
-
-        for plot_id in target_plots:
-            try:
-                self._plot_list[plot_id]
-            except IndexError:
-                print("\n%d is not a valid plot index.\n" % plot_id)
-                return 0, target_plots
-        return 1, target_plots
-
-    def _prepare_fig_for_display(self):
-        """
-        Ensure that the spacing of the plots and other elements look "good".
-        """
-        if self._tighten_layout is True:
-            # try to format the plot "nicely"
-            # nicely means that all labels and titles are well spaced and do
-            # not intersect
-            # this is accomplished using tight_layout()
-            # but this function does not format figure legends
-            # in order to account for this, we will run tight_layout,
-            # add some space at the top for the legend, then shift and scale
-            # everything down
-            try:
-                self._figure.tight_layout()
-                if self.shrink_top_inches != 0:
-                    # add some space to the top of the plot
-                    self._figure.set_size_inches(
-                        self._figure.get_size_inches() + np.array(
-                            [0., self.shrink_top_inches]))
-
-                    # find percentage of the fig height that we need to
-                    # shift and scale the plots
-                    fig_height = float(self._figure.get_size_inches()[1])
-                    shrink_top_ratio = self.shrink_top_inches / fig_height / 1.
-
-                    num_rows = self._grid_shape[0]
-                    # height of first plot; assume each plot has same height
-                    plot_height = (
-                        float(self._plot_list[0].get_position().height) *
-                        fig_height)
-                    # amount each plot needs to be shrunk
-                    reduce_plot_height_inches = (self.shrink_top_inches * 1. /
-                                                 num_rows)
-                    reduce_plot_height_ratio = (reduce_plot_height_inches /
-                                                plot_height)
-
-                    # scale each plot the same
-                    self._scale_plots("all", 1., 1. - reduce_plot_height_ratio)
-
-                    # shift the plots different amounts dependong on their row
-                    num_plots = len(self._plot_list)
-                    num_cols = self._grid_shape[1]
-                    # assign a shift amount based on each plots row
-                    # don't shift the bottom row at all
-                    # shift the top row the most
-                    shift_list = [-shrink_top_ratio *
-                                  (num_rows-plot_id/num_cols-1) for plot_id
-                                  in range(num_plots)]
-                    self._shift_plots("all", 0, shift_list)
-            except:
-                print("\nCannot automatically format subplot layout.\n")
