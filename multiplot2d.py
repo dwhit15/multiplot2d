@@ -77,7 +77,7 @@ class MultiPlotter:
             try:
                 self._figure = subplot_grid[0].figure
                 plot_list_grid = np.array(subplot_grid)
-                print("TODO: figure out grid shape")
+                # print("TODO: figure out grid shape")
             # if that didn't work, print error message and return
             except:
                 print("\nsubplot_grid must be a list of grid dimensions")
@@ -292,7 +292,8 @@ class MultiPlotter:
 
         return line_list
 
-    def set_plot_titles(self, target_plots, plot_titles):
+    def set_plot_titles(self, target_plots, plot_titles,
+            plot_title_args=dict()):
         """
         Set the title of one or more subplots.
 
@@ -305,6 +306,9 @@ class MultiPlotter:
             Title(s) to set. If only one title is provided, all target
             plots will receive the same title. Otherwise, there should be one
             title for each target plot.
+        plot_title_args : keyword arguments, optional
+            Keyword arguments for matplotlib.axes.Axes.set_title
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.set_title).
 
         Returns
         -------
@@ -338,11 +342,12 @@ class MultiPlotter:
             else:
                 title = plot_titles[plot_counter]
 
-            title_list.append(self._plot_list[plot_id].set_title(title))
+            title_list.append(self._plot_list[plot_id].set_title(title,**plot_title_args))
 
         return title_list
 
-    def set_axis_titles(self, target_plots, x_titles="", y_titles=""):
+    def set_axis_titles(self, target_plots, x_titles="", y_titles="",
+            axis_title_args=dict()):
         """
         Set the axis titles of one or more subplots.
 
@@ -363,6 +368,11 @@ class MultiPlotter:
             be one label for each target plot. If the label for any target plot
             is set to an empty string (i.e. '') then the label will not be
             changed for that plot.
+        axis_title_args : keyword arguments, optional
+            Keyword arguments for matplotlib.axes.Axes.set_xlabel
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.set_xlabel)
+            and matplotlib.axes.Axes.set_ylabel
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.set_ylabel).
 
         Returns
         -------
@@ -417,9 +427,9 @@ class MultiPlotter:
                 y_title = y_titles[plot_counter]
 
             if x_title != '':
-                axis_title_list[plot_id][0] = plot_item.set_xlabel(x_title)
+                axis_title_list[plot_id][0] = plot_item.set_xlabel(x_title,**axis_title_args)
             if y_title != '':
-                axis_title_list[plot_id][1] =plot_item.set_ylabel(y_title)
+                axis_title_list[plot_id][1] =plot_item.set_ylabel(y_title,**axis_title_args)
 
         return axis_title_list
 
@@ -655,7 +665,7 @@ class MultiPlotter:
             self._figure.savefig(pdf, format='pdf', **save_args)
         os.chdir(current_drive)
 
-    def display(self, plot_args=dict()):
+    def display(self, display_args=dict()):
         """
         Show the figure.
 
@@ -664,12 +674,12 @@ class MultiPlotter:
 
         Parameters
         ----------
-        plot_args : keyword arguments, optional
+        display_args : keyword arguments, optional
             Keyword arguments for matplotlib.figure.Figure.show
             (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
         """
         self._prepare_fig_for_display()
-        self._figure.show(**plot_args)
+        self._figure.show(**display_args)
 
     def _target_plots_exist(self,target_plots):
         """
