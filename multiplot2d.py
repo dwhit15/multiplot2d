@@ -253,7 +253,6 @@ class MultiPlotter:
                 line_styles))
             print("line style for every col in data matrix y")
             print("or one line style which will be shared by all lines.\n")
-
             return -1
 
         if num_target_plots != ycols:
@@ -306,12 +305,18 @@ class MultiPlotter:
             Title(s) to set. If only one title is provided, all target
             plots will receive the same title. Otherwise, there should be one
             title for each target plot.
+
+        Returns
+        -------
+        title_list : list of matplotlib.text.Text items
+            A list of the subplot titles that were added to each subplot. The
+            ith item in `title_list` corresponds to the title of the ith subplot in
+            `target_plots`.
         """
-        ret_error = [-1, -1]
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         if ret is False:
-            return ret_error
+            return -1
         num_target_plots = len(target_plots)
 
         # turn plot_titles into lists if they are not
@@ -319,6 +324,7 @@ class MultiPlotter:
             plot_titles = [plot_titles]
 
         len_plot_titles = len(plot_titles)
+        title_list = []
         if len_plot_titles != 1 and len_plot_titles < num_target_plots:
             print("\n%d plot titles were received." % len_plot_titles)
             print("%d target plots were received." % num_target_plots)
@@ -332,9 +338,11 @@ class MultiPlotter:
             else:
                 title = plot_titles[plot_counter]
 
-            self._plot_list[plot_id].set_title(title)
+            title_list.append(self._plot_list[plot_id].set_title(title))
 
-    def set_axis_titles(self, target_plots, x_labels, y_labels):
+        return title_list
+
+    def set_axis_titles(self, target_plots, x_titles="", y_titles=""):
         """
         Set the axis titles of one or more subplots.
 
@@ -343,18 +351,27 @@ class MultiPlotter:
         target_plots : sequence of integers
             Indexes, in row-major order, of the plots to be affected by this
             function.
-        x_labels : string or tuple of strings
+        x_titles : string or tuple of strings, optional, default: ""
             X-axis label(s) to set. If only one label is provided, all
             target plots will receive the same x-label. Otherwise, there should
             be one label for each target plot. If the label for any target plot
             is set to an empty string (i.e. '') then the label will not be
             changed for that plot.
-        y_labels : string or tuple of strings
+        y_titles : string or tuple of strings, optional, default: ""
             Y-axis label(s) to set. If only one label is provided, all
             target plots will receive the same y-label. Otherwise, there should
             be one label for each target plot. If the label for any target plot
             is set to an empty string (i.e. '') then the label will not be
             changed for that plot.
+
+        Returns
+        -------
+        axis_title_list : list of lists of matplotlib.text.Text items
+            A list of the subplot axis titles that were added to each subplot.
+            The ith item in `title_list` corresponds to the axis titles of the
+            ith subplot in `target_plots`. The first item in the ith item in
+            `title_list` corresponds to the x-axis title. The second item in the
+            ith item in `title_list` corresponds to the y-axis title.
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
@@ -362,45 +379,49 @@ class MultiPlotter:
             return -1
         num_target_plots = len(target_plots)
 
-        # turn xlables and y_labels into lists if they are not
-        if type(x_labels) == str:
-            x_labels = [x_labels]
-        if type(y_labels) == str:
-            y_labels = [y_labels]
+        # turn xlables and y_titles into lists if they are not
+        if type(x_titles) == str:
+            x_titles = [x_titles]
+        if type(y_titles) == str:
+            y_titles = [y_titles]
 
-        len_x_labels = len(x_labels)
-        len_y_labels = len(y_labels)
-        if len_x_labels != 1 and len_x_labels < num_target_plots:
-            print("\n%d labels for x-axis were received." % len_x_labels)
+        len_x_titles = len(x_titles)
+        len_y_titles = len(y_titles)
+        if len_x_titles != 1 and len_x_titles < num_target_plots:
+            print("\n%d labels for x-axis were received." % len_x_titles)
             print("%d target plots were received." % num_target_plots)
             print("There either must be one label for every plot")
             print("or only one label which will be shared by all plots.\n")
             return -1
 
-        if len_y_labels != 1 and len_y_labels < num_target_plots:
-            print("\n%d labels for y-axis were received." % len_y_labels)
+        if len_y_titles != 1 and len_y_titles < num_target_plots:
+            print("\n%d labels for y-axis were received." % len_y_titles)
             print("%d target plots were received." % num_target_plots)
             print("There either must be one label for every plot")
             print("or only one label which will be shared by all plots.\n")
             return -1
+
+        axis_title_list = [["",""]]*num_target_plots
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
 
-            if len_x_labels == 1:
-                x_title = x_labels[0]
+            if len_x_titles == 1:
+                x_title = x_titles[0]
             else:
-                x_title = x_labels[plot_counter]
+                x_title = x_titles[plot_counter]
 
-            if len_y_labels == 1:
-                y_title = y_labels[0]
+            if len_y_titles == 1:
+                y_title = y_titles[0]
             else:
-                y_title = y_labels[plot_counter]
+                y_title = y_titles[plot_counter]
 
             if x_title != '':
-                plot_item.set_xlabel(x_title)
+                axis_title_list[plot_id][0] = plot_item.set_xlabel(x_title)
             if y_title != '':
-                plot_item.set_ylabel(y_title)
+                axis_title_list[plot_id][1] =plot_item.set_ylabel(y_title)
+
+        return axis_title_list
 
     def add_legend(self, target_plots, legend_args=dict()):
         """
@@ -419,14 +440,14 @@ class MultiPlotter:
         -------
         legend_items : list of matplotlib.legend.Legend items
             A list of the legend items that were added to the subplots. The ith
-            item in `legend_items` corresponds to the ith subplot in
-            `target_plots`.
+            item in `legend_items` corresponds to the legend of the ith subplot
+            in `target_plots`.
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         num_target_plots = len(target_plots)
         if ret is False:
-            return [-1]*num_target_plots
+            return -1
 
         legend_items = []
         for plot_counter, plot_id in enumerate(target_plots):
@@ -452,14 +473,14 @@ class MultiPlotter:
         -------
         grid_items : list of matplotlib.axes.Axes.grid items
             A list of the grid items that were added to the subplots. The ith
-            item in `grid_items` corresponds to the ith subplot in
+            item in `grid_items` corresponds to the grid of the ith subplot in
             `target_plots`.
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         num_target_plots = len(target_plots)
         if ret is False:
-            return [-1]*num_target_plots
+            return -1
 
         grid_items = []
         for plot_counter, plot_id in enumerate(target_plots):
@@ -468,145 +489,88 @@ class MultiPlotter:
         return grid_items
 
     def get_plots(self, target_plots):
+        """
+        Get the underlying subplot ojbect instances for this multiplotter.
+
+        Parameters
+        ----------
+        target_plots : sequence of integers
+            Indexes, in row-major order, of the plots to be return.
+
+        Returns
+        -------
+        plot_list : list of matplotlib.axes._subplots.AxesSubplot items
+            A list of the subplot items. The ith
+            subplot in `plot_list` corresponds to the ith subplot in
+            `target_plots`.
+        """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         if ret is False:
             return -1
 
-        return_plots = []
+        plot_list = []
         for plot_id in target_plots:
-            return_plots.append(self._plot_list[plot_id])
+            plot_list.append(self._plot_list[plot_id])
 
-        return return_plots
+        return plot_list
 
     def scale_y_limits(self, target_plots, scale_high=1.05, scale_low=1.05):
+        """
+        Scale the limits of the y-axis by some amount.
+
+        Matplotlib automatically scales the y-axis to fit all of the data on
+        a plot. However, occasionally some of the data is obscured because
+        it is on or very close to the top or bottom edge of the plot. This
+        method will add space to the top or bottom of the plot to keep this
+        from happening. The amount of space is relative to the current limits.
+
+        Parameters
+        ----------
+        target_plots : sequence of integers
+            Indexes, in row-major order, of the plots to be affected by this
+            function.
+        scale_high : float, optional, default: 1.05
+            The new upper y-limit will be the current upper y-limit times
+            `scale_high`.
+        scale_low : float, optional, default: 1.05
+            The new lower y-limit will be the current lower y-limit times
+            `scale_low`.
+
+        Returns
+        -------
+        y_limit_list : list of tuples
+            A list of the new y-limits. The ith item in `y_limit_list`
+            corresponds to the y-limits of the ith subplot in
+            `target_plots`. The first item in the ith item in
+            `y_limit_list` corresponds to the lower limit. The second item in the
+            ith item in `y_limit_list` corresponds to the upper limit.
+        """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         if ret is False:
             return -1
 
+        y_limit_list = []
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
+            # update axis data limits
             plot_item.relim()
+            # current y limits (lower,upper)
             y_lim = plot_item.get_ylim()
-            y_amp = (y_lim[1]-y_lim[0])/2
+            # the "middle bound"
+            # the value of y "in between" the upper and lower limits
             y_mean = (y_lim[1]+y_lim[0])/2
+            # the difference between the upper bound and the "middle bound"
+            y_amp = (y_lim[1]-y_lim[0])/2
+
+            # new low limit
             y_low = y_mean - scale_low*y_amp
+            # new upper limit
             y_high = y_mean + scale_high*y_amp
-            plot_item.set_ylim(y_low, y_high)
+            y_limit_list.append(plot_item.set_ylim(y_low, y_high))
 
-    # TODO all the usual error checking
-    def set_limits(self, target_plots, x_limits=[], y_limits=[]):
-        # ensure that the target plots are valid
-        ret, target_plots = self._target_plots_exist(target_plots)
-        if ret is False:
-            return -1
-        num_target_plots = len(target_plots)
-
-        for plot_counter, plot_id in enumerate(target_plots):
-            plot_item = self._plot_list[plot_id]
-
-            if y_limits != []:
-                plot_item.set_ylim(y_limits[plot_counter])
-            if x_limits != []:
-                plot_item.set_xlim(x_limits[plot_counter])
-
-    def _scale_plots(self, target_plots, x_scale=1., y_scale=1.):
-        # ensure that the target plots are valid
-        ret, target_plots = self._target_plots_exist(target_plots)
-        if ret is False:
-            return -1
-        num_target_plots = len(target_plots)
-
-        # turn x_scale and y_scale into lists if they are not
-        if type(x_scale) == int or type(x_scale) == float:
-            x_scale = [x_scale]
-        if type(y_scale) == int or type(y_scale) == float:
-            y_scale = [y_scale]
-
-        len_x_scale = len(x_scale)
-        len_y_scale = len(y_scale)
-        if len_x_scale != 1 and len_x_scale < num_target_plots:
-            print("\n%d scale factors for x-axis were received." % len_x_scale)
-            print("%d target plots were received." % num_target_plots)
-            print("There either must be one scale factor for every plot")
-            print("or only one factor which will be shared by all plots.\n")
-            return -1
-
-        if len_y_scale != 1 and len_y_scale < num_target_plots:
-            print("\n%d scale factors for y-axis were received." % len_y_scale)
-            print("%d target plots were received." % num_target_plots)
-            print("There either must be one scale factor for every plot")
-            print("or only one factor which will be shared by all plots.\n")
-            return -1
-
-        for plot_counter, plot_id in enumerate(target_plots):
-            plot_item = self._plot_list[plot_id]
-
-            if len_x_scale == 1:
-                scale_x = x_scale[0]
-            else:
-                scale_x = x_scale[plot_counter]
-
-            if len_y_scale == 1:
-                scale_y = y_scale[0]
-            else:
-                scale_y = y_scale[plot_counter]
-
-            box = plot_item.get_position()
-            plot_item.set_position([box.x0, box.y0,
-                                    box.width*scale_x, box.height*scale_y])
-
-        self._tighten_layout = False
-
-    def _shift_plots(self, target_plots, x_shift=0., y_shift=0.):
-        # ensure that the target plots are valid
-        ret, target_plots = self._target_plots_exist(target_plots)
-        if ret is False:
-            return -1
-        num_target_plots = len(target_plots)
-
-        # turn x_scale and y_scale into lists if they are not
-        if type(x_shift) == int or type(x_shift) == float:
-            x_shift = [x_shift]
-        if type(y_shift) == int or type(y_shift) == float:
-            y_shift = [y_shift]
-
-        len_x_shift = len(x_shift)
-        len_y_shift = len(y_shift)
-        if len_x_shift != 1 and len_x_shift < num_target_plots:
-            print("\n%d shift factors for x-axis were received." % len_x_shift)
-            print("%d target plots were received." % num_target_plots)
-            print("There either must be one shift factor for every plot")
-            print("or only one factor which will be shared by all plots.\n")
-            return -1
-
-        if len_y_shift != 1 and len_y_shift < num_target_plots:
-            print("\n%d shift factors for y-axis were received." % len_y_shift)
-            print("%d target plots were received." % num_target_plots)
-            print("There either must be one shift factor for every plot")
-            print("or only one factor which will be shared by all plots.\n")
-            return -1
-
-        for plot_counter, plot_id in enumerate(target_plots):
-            plot_item = self._plot_list[plot_id]
-
-            if len_x_shift == 1:
-                shift_x = x_shift[0]
-            else:
-                shift_x = x_shift[plot_counter]
-
-            if len_y_shift == 1:
-                shift_y = y_shift[0]
-            else:
-                shift_y = y_shift[plot_counter]
-
-            box = plot_item.get_position()
-            plot_item.set_position([box.x0+box.width*shift_x,
-                                    box.y0+box.height*shift_y,
-                                    box.width, box.height])
-
-        self._tighten_layout = False
+        return y_limit_list
 
     def get_figure(self):
         """
@@ -707,48 +671,6 @@ class MultiPlotter:
         self._prepare_fig_for_display()
         self._figure.show(**plot_args)
 
-    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
-                          labels=None):
-        """
-        Add a figure legend.
-
-        Parameters
-        ----------
-        legend_args : keyword arguments, optional
-            Keyword arguments for matplotlib.axes.Axes.legend
-            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
-        legend_whitespace_inches : float, default: 0.5
-            Amount of space, in inches, for the legend at the top of the
-            figure.
-        labels : string or tuple of strings, optional
-            The items in `labels` will be used to populate the figure legend.
-            If not provided, the labels set while "adding data" will be used.
-        """
-
-        # for now only upper center legends are supported
-        legend_args["loc"] = 'upper center'
-
-        # get list of lines for the first plot and their associated labels
-        # for now only lines in first plot will be used to create the legend
-        plot_lines = self.get_plots(0)[0].lines
-        line_label_list = []
-        if labels is None:
-            line_label_list = [line.get_label() for line in plot_lines]
-        else:
-            line_label_list = labels
-
-        # create the legend
-        self._figure.legend(plot_lines, line_label_list, **legend_args)
-
-        # will need to allocate space for the legend
-        # this will be taken care of in _prepare_fig_for_display(),
-        # but must set the amount of space to allocate now
-        self.shrink_top_inches = legend_space_inches
-
-    def set_figure_title(self,title,title_args=dict(),title_space_inches=0.3):
-        self.shrink_top_inches = title_space_inches
-        self._figure.suptitle(title,**title_args)
-
     def _target_plots_exist(self,target_plots):
         """
         Private method used to check if the target plot inputs exist.
@@ -786,40 +708,5 @@ class MultiPlotter:
             # everything down
             try:
                 self._figure.tight_layout()
-                if self.shrink_top_inches != 0:
-                    # add some space to the top of the plot
-                    self._figure.set_size_inches(
-                        self._figure.get_size_inches() + np.array(
-                            [0., self.shrink_top_inches]))
-
-                    # find percentage of the fig height that we need to
-                    # shift and scale the plots
-                    fig_height = float(self._figure.get_size_inches()[1])
-                    shrink_top_ratio = self.shrink_top_inches / fig_height / 1.
-
-                    num_rows = self._grid_shape[0]
-                    # height of first plot; assume each plot has same height
-                    plot_height = (
-                        float(self._plot_list[0].get_position().height) *
-                        fig_height)
-                    # amount each plot needs to be shrunk
-                    reduce_plot_height_inches = (self.shrink_top_inches * 1. /
-                                                 num_rows)
-                    reduce_plot_height_ratio = (reduce_plot_height_inches /
-                                                plot_height)
-
-                    # scale each plot the same
-                    self._scale_plots("all", 1., 1. - reduce_plot_height_ratio)
-
-                    # shift the plots different amounts dependong on their row
-                    num_plots = len(self._plot_list)
-                    num_cols = self._grid_shape[1]
-                    # assign a shift amount based on each plots row
-                    # don't shift the bottom row at all
-                    # shift the top row the most
-                    shift_list = [-shrink_top_ratio *
-                                  (num_rows-plot_id/num_cols-1) for plot_id
-                                  in range(num_plots)]
-                    self._shift_plots("all", 0, shift_list)
             except:
                 print("\nCannot automatically format subplot layout.\n")

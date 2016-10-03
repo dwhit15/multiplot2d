@@ -12,7 +12,6 @@ from multiplot_example_data import *
 plt.close("all")
 plt.ioff()
 
-plt.close("all")
 try:
     plt.style.use("dwplot")
 except:
