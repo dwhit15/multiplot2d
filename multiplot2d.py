@@ -682,8 +682,8 @@ class MultiPlotter:
             if "format" not in save_args:
                 save_args["format"] = "png"
             if filename is None:
-                filename = self._figure.canvas.get_window_title() + "."
-                + save_args["format"]
+                filename = (self._figure.canvas.get_window_title() + "." +
+                            save_args["format"])
             self._figure.savefig(filename,
                                  facecolor=self._figure.get_facecolor(),
                                  **save_args)
@@ -691,7 +691,7 @@ class MultiPlotter:
             self._figure.savefig(pdf, format='pdf', **save_args)
         os.chdir(current_drive)
 
-    def display(self, plot_args=dict()):
+    def display(self, hold=False, plot_args=dict()):
         """
         Show the figure.
 
@@ -700,12 +700,17 @@ class MultiPlotter:
 
         Parameters
         ----------
+        hold : boolean
+            When true, figures will stay open and prevent the program from
+            continuing until all figure windows are closed.
         plot_args : keyword arguments, optional
             Keyword arguments for matplotlib.figure.Figure.show
             (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
         """
         self._prepare_fig_for_display()
         self._figure.show(**plot_args)
+        if hold:
+            plt.show()
 
     def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
                           labels=None):
@@ -745,11 +750,12 @@ class MultiPlotter:
         # but must set the amount of space to allocate now
         self.shrink_top_inches = legend_space_inches
 
-    def set_figure_title(self,title,title_args=dict(),title_space_inches=0.3):
+    def set_figure_title(self, title, title_args=dict(),
+                         title_space_inches=0.3):
         self.shrink_top_inches = title_space_inches
-        self._figure.suptitle(title,**title_args)
+        self._figure.suptitle(title, **title_args)
 
-    def _target_plots_exist(self,target_plots):
+    def _target_plots_exist(self, target_plots):
         """
         Private method used to check if the target plot inputs exist.
         """
@@ -759,7 +765,7 @@ class MultiPlotter:
             target_plots = self._all_plot_indexes
         elif (type(target_plots) != list and type(target_plots) != tuple and
               target_plots != "all"):
-            import pdb;pdb.set_trace()
+
             print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
             return 0, target_plots
 
