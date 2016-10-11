@@ -59,7 +59,7 @@ sudo pip install --upgrade matplotlib ipython qtconsole pandas jedi rope
 
 ## Documentation
 
-The documenation is about 75% complete.
+The documentation is about 75% complete.
 It is written inline the code using Sphinx.
 
 We hope to have a page on [readthedocs](https://readthedocs.org/) soon.
