@@ -293,7 +293,7 @@ class MultiPlotter:
         return line_list
 
     def set_plot_titles(self, target_plots, plot_titles,
-            plot_title_args=dict()):
+                        plot_title_args=dict()):
         """
         Set the title of one or more subplots.
 
@@ -314,8 +314,8 @@ class MultiPlotter:
         -------
         title_list : list of matplotlib.text.Text items
             A list of the subplot titles that were added to each subplot. The
-            ith item in `title_list` corresponds to the title of the ith subplot in
-            `target_plots`.
+            ith item in `title_list` corresponds to the title of the ith
+            subplot in `target_plots`.
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
@@ -342,12 +342,13 @@ class MultiPlotter:
             else:
                 title = plot_titles[plot_counter]
 
-            title_list.append(self._plot_list[plot_id].set_title(title,**plot_title_args))
+            title_list.append(
+                self._plot_list[plot_id].set_title(title, **plot_title_args))
 
         return title_list
 
     def set_axis_titles(self, target_plots, x_titles="", y_titles="",
-            axis_title_args=dict()):
+                        axis_title_args=dict()):
         """
         Set the axis titles of one or more subplots.
 
@@ -380,8 +381,8 @@ class MultiPlotter:
             A list of the subplot axis titles that were added to each subplot.
             The ith item in `title_list` corresponds to the axis titles of the
             ith subplot in `target_plots`. The first item in the ith item in
-            `title_list` corresponds to the x-axis title. The second item in the
-            ith item in `title_list` corresponds to the y-axis title.
+            `title_list` corresponds to the x-axis title. The second item in
+            the ith item in `title_list` corresponds to the y-axis title.
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
@@ -427,9 +428,11 @@ class MultiPlotter:
                 y_title = y_titles[plot_counter]
 
             if x_title != '':
-                axis_title_list[plot_id][0] = plot_item.set_xlabel(x_title,**axis_title_args)
+                axis_title_list[plot_id][0] = (
+                    plot_item.set_xlabel(x_title, **axis_title_args))
             if y_title != '':
-                axis_title_list[plot_id][1] =plot_item.set_ylabel(y_title,**axis_title_args)
+                axis_title_list[plot_id][1] = (
+                    plot_item.set_ylabel(y_title, **axis_title_args))
 
         return axis_title_list
 
@@ -553,8 +556,8 @@ class MultiPlotter:
             A list of the new y-limits. The ith item in `y_limit_list`
             corresponds to the y-limits of the ith subplot in
             `target_plots`. The first item in the ith item in
-            `y_limit_list` corresponds to the lower limit. The second item in the
-            ith item in `y_limit_list` corresponds to the upper limit.
+            `y_limit_list` corresponds to the lower limit. The second item in
+            the ith item in `y_limit_list` corresponds to the upper limit.
         """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
@@ -681,7 +684,7 @@ class MultiPlotter:
         self._prepare_fig_for_display()
         self._figure.show(**display_args)
 
-    def _target_plots_exist(self,target_plots):
+    def _target_plots_exist(self, target_plots):
         """
         Private method used to check if the target plot inputs exist.
         """
@@ -691,7 +694,6 @@ class MultiPlotter:
             target_plots = self._all_plot_indexes
         elif (type(target_plots) != list and type(target_plots) != tuple and
               target_plots != "all"):
-            import pdb;pdb.set_trace()
             print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
             return 0, target_plots
 
