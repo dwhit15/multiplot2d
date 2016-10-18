@@ -412,7 +412,8 @@ class MultiPlotter:
             print("or only one label which will be shared by all plots.\n")
             return -1
 
-        axis_title_list = [["",""]]*num_target_plots
+        axis_title_list = [["", ""]]*num_target_plots
+        return_plot_index = 0
 
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
@@ -428,11 +429,12 @@ class MultiPlotter:
                 y_title = y_titles[plot_counter]
 
             if x_title != '':
-                axis_title_list[plot_id][0] = (
+                axis_title_list[return_plot_index][0] = (
                     plot_item.set_xlabel(x_title, **axis_title_args))
             if y_title != '':
-                axis_title_list[plot_id][1] = (
+                axis_title_list[return_plot_index][1] = (
                     plot_item.set_ylabel(y_title, **axis_title_args))
+            return_plot_index += 1
 
         return axis_title_list
 
