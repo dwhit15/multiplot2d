@@ -659,8 +659,8 @@ class MultiPlotter:
             if "format" not in save_args:
                 save_args["format"] = "png"
             if filename is None:
-                filename = self._figure.canvas.get_window_title() + "."
-                + save_args["format"]
+                filename = (self._figure.canvas.get_window_title() + "." +
+                            save_args["format"])
             self._figure.savefig(filename,
                                  facecolor=self._figure.get_facecolor(),
                                  **save_args)
@@ -668,7 +668,7 @@ class MultiPlotter:
             self._figure.savefig(pdf, format='pdf', **save_args)
         os.chdir(current_drive)
 
-    def display(self, display_args=dict()):
+    def display(self, hold=False, display_args=dict()):
         """
         Show the figure.
 
@@ -677,12 +677,55 @@ class MultiPlotter:
 
         Parameters
         ----------
+        hold : boolean
+            When true, figures will stay open and prevent the program from
+            continuing until all figure windows are closed.
         display_args : keyword arguments, optional
             Keyword arguments for matplotlib.figure.Figure.show
             (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
         """
         self._prepare_fig_for_display()
         self._figure.show(**display_args)
+        if hold:
+            plt.show()
+
+    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
+                          labels=None):
+        """
+        Add a figure legend.
+
+        Parameters
+        ----------
+        legend_args : keyword arguments, optional
+            Keyword arguments for matplotlib.axes.Axes.legend
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
+        legend_whitespace_inches : float, default: 0.5
+            Amount of space, in inches, for the legend at the top of the
+            figure.
+        labels : string or tuple of strings, optional
+            The items in `labels` will be used to populate the figure legend.
+            If not provided, the labels set while "adding data" will be used.
+        """
+
+        # for now only upper center legends are supported
+        legend_args["loc"] = 'upper center'
+
+        # get list of lines for the first plot and their associated labels
+        # for now only lines in first plot will be used to create the legend
+        plot_lines = self.get_plots(0)[0].lines
+        line_label_list = []
+        if labels is None:
+            line_label_list = [line.get_label() for line in plot_lines]
+        else:
+            line_label_list = labels
+
+        # create the legend
+        self._figure.legend(plot_lines, line_label_list, **legend_args)
+
+        # will need to allocate space for the legend
+        # this will be taken care of in _prepare_fig_for_display(),
+        # but must set the amount of space to allocate now
+        self.shrink_top_inches = legend_space_inches
 
     def _target_plots_exist(self, target_plots):
         """
@@ -694,6 +737,7 @@ class MultiPlotter:
             target_plots = self._all_plot_indexes
         elif (type(target_plots) != list and type(target_plots) != tuple and
               target_plots != "all"):
+
             print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
             return 0, target_plots
 
