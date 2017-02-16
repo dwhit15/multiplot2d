@@ -570,8 +570,7 @@ class MultiPlotter:
             if "format" not in save_args:
                 save_args["format"] = "png"
             if filename is None:
-                filename = self._figure.canvas.get_window_title() + "."
-                + save_args["format"]
+                filename = self._figure.canvas.get_window_title() + "." + save_args["format"]
             self._figure.savefig(filename,
                                  facecolor=self._figure.get_facecolor(),
                                  **save_args)
@@ -678,6 +677,18 @@ class MultiPlotter:
             return -1
         num_target_plots = len(target_plots)
 
+        set_x_lims = True
+        set_y_lims = True
+        if x_limits==[] or x_limits==():
+            set_x_lims = False
+        if y_limits==[] or y_limits==():
+            set_y_lims = False
+
+        if set_x_lims and type(x_limits[0]) != list and type(x_limits[0]) != tuple:
+            x_limits = [x_limits]*num_target_plots
+        if set_y_lims and type(y_limits[0]) != list and type(y_limits[0]) != tuple:
+            y_limits = [y_limits]*num_target_plots
+
         for plot_counter, plot_id in enumerate(target_plots):
             plot_item = self._plot_list[plot_id]
 
@@ -783,7 +794,7 @@ class MultiPlotter:
 
         self._tighten_layout = False
 
-    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
+    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.3,
                           labels=None):
         """
         Add a figure legend.
@@ -812,6 +823,7 @@ class MultiPlotter:
             line_label_list = [line.get_label() for line in plot_lines]
         else:
             line_label_list = labels
+        legend_args["ncol"] = len(line_label_list)
 
         # create the legend
         self._figure.legend(plot_lines, line_label_list, **legend_args)
