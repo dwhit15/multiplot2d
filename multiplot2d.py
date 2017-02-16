@@ -663,6 +663,7 @@ class MultiPlotter:
             if filename is None:
                 filename = (self._figure.canvas.get_window_title() + "." +
                             save_args["format"])
+
             self._figure.savefig(filename,
                                  facecolor=self._figure.get_facecolor(),
                                  **save_args)
@@ -679,7 +680,7 @@ class MultiPlotter:
 
         Parameters
         ----------
-        hold : boolean
+        hold : boolean, optional, default = False
             When true, figures will stay open and prevent the program from
             continuing until all figure windows are closed.
         display_args : keyword arguments, optional
@@ -691,45 +692,8 @@ class MultiPlotter:
         if hold:
             plt.show()
 
-    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.5,
-                          labels=None):
-        """
-        Add a figure legend.
 
-        Parameters
-        ----------
-        legend_args : keyword arguments, optional
-            Keyword arguments for matplotlib.axes.Axes.legend
-            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
-        legend_whitespace_inches : float, default: 0.5
-            Amount of space, in inches, for the legend at the top of the
-            figure.
-        labels : string or tuple of strings, optional
-            The items in `labels` will be used to populate the figure legend.
-            If not provided, the labels set while "adding data" will be used.
-        """
-
-        # for now only upper center legends are supported
-        legend_args["loc"] = 'upper center'
-
-        # get list of lines for the first plot and their associated labels
-        # for now only lines in first plot will be used to create the legend
-        plot_lines = self.get_plots(0)[0].lines
-        line_label_list = []
-        if labels is None:
-            line_label_list = [line.get_label() for line in plot_lines]
-        else:
-            line_label_list = labels
-
-        # create the legend
-        self._figure.legend(plot_lines, line_label_list, **legend_args)
-
-        # will need to allocate space for the legend
-        # this will be taken care of in _prepare_fig_for_display(),
-        # but must set the amount of space to allocate now
-        self.shrink_top_inches = legend_space_inches
-
-    def _target_plots_exist(self, target_plots):
+    def _target_plots_exist(self,target_plots):
         """
         Private method used to check if the target plot inputs exist.
         """
@@ -739,7 +703,7 @@ class MultiPlotter:
             target_plots = self._all_plot_indexes
         elif (type(target_plots) != list and type(target_plots) != tuple and
               target_plots != "all"):
-
+            import pdb;pdb.set_trace()
             print("\ntarget_plots must be an int, list, tuple, or 'all'.\n")
             return 0, target_plots
 
@@ -766,5 +730,215 @@ class MultiPlotter:
             # everything down
             try:
                 self._figure.tight_layout()
+                if self.shrink_top_inches != 0:
+                    # add some space to the top of the plot
+                    self._figure.set_size_inches(
+                        self._figure.get_size_inches() + np.array(
+                            [0., self.shrink_top_inches]))
+
+                    # find percentage of the fig height that we need to
+                    # shift and scale the plots
+                    fig_height = float(self._figure.get_size_inches()[1])
+                    shrink_top_ratio = self.shrink_top_inches / fig_height / 1.
+
+                    num_rows = self._grid_shape[0]
+                    # height of first plot; assume each plot has same height
+                    plot_height = (
+                        float(self._plot_list[0].get_position().height) *
+                        fig_height)
+                    # amount each plot needs to be shrunk
+                    reduce_plot_height_inches = (self.shrink_top_inches * 1. /
+                                                 num_rows)
+                    reduce_plot_height_ratio = (reduce_plot_height_inches /
+                                                plot_height)
+
+                    # scale each plot the same
+                    self._scale_plots("all", 1., 1. - reduce_plot_height_ratio)
+
+                    # shift the plots different amounts dependong on their row
+                    num_plots = len(self._plot_list)
+                    num_cols = self._grid_shape[1]
+                    # assign a shift amount based on each plots row
+                    # don't shift the bottom row at all
+                    # shift the top row the most
+                    shift_list = [-shrink_top_ratio *
+                                  (num_rows-plot_id/num_cols-1) for plot_id
+                                  in range(num_plots)]
+                    self._shift_plots("all", 0, shift_list)
             except:
                 print("\nCannot automatically format subplot layout.\n")
+
+    def set_limits(self, target_plots, x_limits=[], y_limits=[]):
+        # ensure that the target plots are valid
+        ret, target_plots = self._target_plots_exist(target_plots)
+        if ret is False:
+            return -1
+        num_target_plots = len(target_plots)
+
+        set_x_lims = True
+        set_y_lims = True
+        if x_limits==[] or x_limits==():
+            set_x_lims = False
+        if y_limits==[] or y_limits==():
+            set_y_lims = False
+
+        if set_x_lims and type(x_limits[0]) != list and type(x_limits[0]) != tuple:
+            x_limits = [x_limits]*num_target_plots
+        if set_y_lims and type(y_limits[0]) != list and type(y_limits[0]) != tuple:
+            y_limits = [y_limits]*num_target_plots
+
+        for plot_counter, plot_id in enumerate(target_plots):
+            plot_item = self._plot_list[plot_id]
+
+            if y_limits != []:
+                plot_item.set_ylim(y_limits[plot_counter])
+            if x_limits != []:
+                plot_item.set_xlim(x_limits[plot_counter])
+
+    def _scale_plots(self, target_plots, x_scale=1., y_scale=1.):
+        """
+        Private method used to scale plots.
+        """
+        # ensure that the target plots are valid
+        ret, target_plots = self._target_plots_exist(target_plots)
+        if ret is False:
+            return -1
+        num_target_plots = len(target_plots)
+
+        # turn x_scale and y_scale into lists if they are not
+        if type(x_scale) == int or type(x_scale) == float:
+            x_scale = [x_scale]
+        if type(y_scale) == int or type(y_scale) == float:
+            y_scale = [y_scale]
+
+        len_x_scale = len(x_scale)
+        len_y_scale = len(y_scale)
+        if len_x_scale != 1 and len_x_scale < num_target_plots:
+            print("\n%d scale factors for x-axis were received." % len_x_scale)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one scale factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
+            return -1
+
+        if len_y_scale != 1 and len_y_scale < num_target_plots:
+            print("\n%d scale factors for y-axis were received." % len_y_scale)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one scale factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
+            return -1
+
+        for plot_counter, plot_id in enumerate(target_plots):
+            plot_item = self._plot_list[plot_id]
+
+            if len_x_scale == 1:
+                scale_x = x_scale[0]
+            else:
+                scale_x = x_scale[plot_counter]
+
+            if len_y_scale == 1:
+                scale_y = y_scale[0]
+            else:
+                scale_y = y_scale[plot_counter]
+
+            box = plot_item.get_position()
+            plot_item.set_position([box.x0, box.y0,
+                                    box.width*scale_x, box.height*scale_y])
+
+        self._tighten_layout = False
+
+    def _shift_plots(self, target_plots, x_shift=0., y_shift=0.):
+        """
+        Private method used to shift plots around.
+        """
+        # ensure that the target plots are valid
+        ret, target_plots = self._target_plots_exist(target_plots)
+        if ret is False:
+            return -1
+        num_target_plots = len(target_plots)
+
+        # turn x_scale and y_scale into lists if they are not
+        if type(x_shift) == int or type(x_shift) == float:
+            x_shift = [x_shift]
+        if type(y_shift) == int or type(y_shift) == float:
+            y_shift = [y_shift]
+
+        len_x_shift = len(x_shift)
+        len_y_shift = len(y_shift)
+        if len_x_shift != 1 and len_x_shift < num_target_plots:
+            print("\n%d shift factors for x-axis were received." % len_x_shift)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one shift factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
+            return -1
+
+        if len_y_shift != 1 and len_y_shift < num_target_plots:
+            print("\n%d shift factors for y-axis were received." % len_y_shift)
+            print("%d target plots were received." % num_target_plots)
+            print("There either must be one shift factor for every plot")
+            print("or only one factor which will be shared by all plots.\n")
+            return -1
+
+        for plot_counter, plot_id in enumerate(target_plots):
+            plot_item = self._plot_list[plot_id]
+
+            if len_x_shift == 1:
+                shift_x = x_shift[0]
+            else:
+                shift_x = x_shift[plot_counter]
+
+            if len_y_shift == 1:
+                shift_y = y_shift[0]
+            else:
+                shift_y = y_shift[plot_counter]
+
+            box = plot_item.get_position()
+            plot_item.set_position([box.x0+box.width*shift_x,
+                                    box.y0+box.height*shift_y,
+                                    box.width, box.height])
+
+        self._tighten_layout = False
+
+    def add_figure_legend(self, legend_args=dict(), legend_space_inches=0.3,
+                          labels=None):
+        """
+        Add a figure legend.
+
+        Parameters
+        ----------
+        legend_args : keyword arguments, optional
+            Keyword arguments for matplotlib.axes.Axes.legend
+            (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
+        legend_space_inches : float, default: 0.5
+            Amount of space, in inches, for the legend at the top of the
+            figure.
+        labels : string or tuple of strings, optional
+            The items in `labels` will be used to populate the figure legend.
+            If not provided, the labels set while "adding data" will be used.
+        """
+
+        # for now only upper center legends are supported
+        legend_args["loc"] = 'upper center'
+
+        # get a list of all "uniquely labeled" lines
+        line_label_list = []
+        plot_lines = []
+        for plot in  self.get_plots("all"):
+            for line in plot.lines:
+                label = line.get_label()
+                if label not in line_label_list:
+                    line_label_list.append(label)
+                    plot_lines.append(line)
+
+        if labels != None:
+            line_label_list = labels
+
+        if "ncol" not in legend_args:
+            legend_args["ncol"] = len(line_label_list)
+
+        # create the legend
+        self._figure.legend(plot_lines, line_label_list, **legend_args)
+
+        # will need to allocate space for the legend
+        # this will be taken care of in _prepare_fig_for_display(),
+        # but must set the amount of space to allocate now
+        self.shrink_top_inches = legend_space_inches
