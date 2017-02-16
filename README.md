@@ -20,38 +20,11 @@ In the meantime, here is how to install on Linux systems:
 
 ```bash
 git clone git@github.com:dwhit15/multiplot2d.git
-cd Multiplot2D
-# add this directory to PYTHONPATH in ~/.bashrc
-echo export PYTHONPATH=${PYTHONPATH}:"$(cd "$(dirname "$1")"; pwd)/$(basename "$1")" >> ~/.bashrc
-source ~/.bashrc
+cd multiplot2D
+./setup.sh
 ```
 
-Newer versions of matplotlib have a powerful formatting feature called stylesheets.
-These are an easy way to improve the look of your plots.
-If you need to update matplotlib, this is how to do that:
-```bash
-pip install --upgrade matplotlib
-rm -r ~/.cache/matplotlib
-```
-
-We have some sample stylesheets packaged with Multiplot2D.
-To install them, open a Python interpreter and run this to find out where your
-installation of matplotlib stores its stylesheets:
-```
-import matplotlib
-matplotlib.get_configdir()
-```
-It might be something like /home/user_name/.config/matplotlib. Whatever it is,
-inside that directory create another directory called stylelib/ if it doesn't
-exist already. Then copy the stylesheet found in multiplot2d/examples into the
-matplotlib/stylelib directory. In the terminal, a command for this may look
-like:
-```
-cp multiplot2d/examples/*.mplstyle /home/user_name/matplotlib/stylelib/
-```
-
-If you are using Spyder, upgrading matplotlib might break things.
-To fix this, upgrade other Spyder packages as well:
+If you are using Spyder, upgrade its packages as well:
 ```bash
 sudo apt-get install libfreetype6-dev libxft-dev
 sudo pip install --upgrade matplotlib ipython qtconsole pandas jedi rope
