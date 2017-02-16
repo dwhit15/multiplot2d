@@ -587,6 +587,8 @@ class MultiPlotter:
 
         Parameters
         ----------
+        hold : boolean, optional, default = False
+            If true, show the figure with blocking call to plt.show().
         plot_args : keyword arguments, optional
             Keyword arguments for matplotlib.figure.Figure.show
             (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
@@ -670,7 +672,6 @@ class MultiPlotter:
             except:
                 print("\nCannot automatically format subplot layout.\n")
 
-    # TODO all the usual error checking
     def set_limits(self, target_plots, x_limits=[], y_limits=[]):
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
@@ -699,6 +700,9 @@ class MultiPlotter:
                 plot_item.set_xlim(x_limits[plot_counter])
 
     def _scale_plots(self, target_plots, x_scale=1., y_scale=1.):
+        """
+        Private method used to scale plots.
+        """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         if ret is False:
@@ -747,6 +751,9 @@ class MultiPlotter:
         self._tighten_layout = False
 
     def _shift_plots(self, target_plots, x_shift=0., y_shift=0.):
+        """
+        Private method used to shift plots around.
+        """
         # ensure that the target plots are valid
         ret, target_plots = self._target_plots_exist(target_plots)
         if ret is False:
@@ -805,7 +812,7 @@ class MultiPlotter:
         legend_args : keyword arguments, optional
             Keyword arguments for matplotlib.axes.Axes.legend
             (http://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes.legend).
-        legend_whitespace_inches : float, default: 0.5
+        legend_space_inches : float, default: 0.5
             Amount of space, in inches, for the legend at the top of the
             figure.
         labels : string or tuple of strings, optional
@@ -840,6 +847,6 @@ class MultiPlotter:
         # but must set the amount of space to allocate now
         self.shrink_top_inches = legend_space_inches
 
-    def set_figure_title(self,title,title_args=dict(),title_space_inches=0.3):
-        self.shrink_top_inches = title_space_inches
-        self._figure.suptitle(title,**title_args)
+    # def set_figure_title(self,title,title_args=dict(),title_space_inches=0.3):
+    #     self.shrink_top_inches = title_space_inches
+    #     self._figure.suptitle(title,**title_args)
