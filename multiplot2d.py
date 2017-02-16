@@ -578,7 +578,7 @@ class MultiPlotter:
             self._figure.savefig(pdf, format='pdf', **save_args)
         os.chdir(current_drive)
 
-    def display(self, plot_args=dict()):
+    def display(self, hold=False, display_args=dict()):
         """
         Show the figure.
 
@@ -592,7 +592,8 @@ class MultiPlotter:
             (http://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure.show).
         """
         self._prepare_fig_for_display()
-        self._figure.show(**plot_args)
+        if hold:
+            self._figure.show(**display_args)
 
     def _target_plots_exist(self,target_plots):
         """
@@ -815,7 +816,7 @@ class MultiPlotter:
         # for now only upper center legends are supported
         legend_args["loc"] = 'upper center'
 
-        # get a list of all "uniquely labeled" lines 
+        # get a list of all "uniquely labeled" lines
         line_label_list = []
         plot_lines = []
         for plot in  self.get_plots("all"):
