@@ -815,15 +815,21 @@ class MultiPlotter:
         # for now only upper center legends are supported
         legend_args["loc"] = 'upper center'
 
-        # get list of lines for the first plot and their associated labels
-        # for now only lines in first plot will be used to create the legend
-        plot_lines = self.get_plots(0)[0].lines
+        # get a list of all "uniquely labeled" lines 
         line_label_list = []
-        if labels is None:
-            line_label_list = [line.get_label() for line in plot_lines]
-        else:
+        plot_lines = []
+        for plot in  self.get_plots("all"):
+            for line in plot.lines:
+                label = line.get_label()
+                if label not in line_label_list:
+                    line_label_list.append(label)
+                    plot_lines.append(line)
+
+        if labels != None:
             line_label_list = labels
-        legend_args["ncol"] = len(line_label_list)
+
+        if "ncol" not in legend_args:
+            legend_args["ncol"] = len(line_label_list)
 
         # create the legend
         self._figure.legend(plot_lines, line_label_list, **legend_args)
