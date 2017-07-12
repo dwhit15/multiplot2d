@@ -20,8 +20,7 @@ END`
 mkdir $user_dir/stylelib/
 
 # copy multiplot2d stylesheet there
-cp examples/*.mplstyle $user_dir/stylelib/
+cp stylesheets/*.mplstyle $user_dir/stylelib/
 
 # confirm
 echo "multiplot2d configured!"
-

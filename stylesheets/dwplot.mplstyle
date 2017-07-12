@@ -9,7 +9,7 @@ figure.dpi: 100
 #############
 ### lines ###
 #############
-lines.linewidth: 2.0 
+lines.linewidth: 1.5
 
 ############
 ### font ###
@@ -57,7 +57,7 @@ ytick.labelsize: x-small
 ############
 
 grid.color: D3D3D3
-grid.linestyle: -   
+grid.linestyle: -
 
 ##############
 ### figure ###
@@ -70,7 +70,7 @@ figure.edgecolor: 0.50
 ### legend ###
 ##############
 legend.fancybox: True
-legend.facecolor: white 
+legend.facecolor: white
 legend.shadow: False
 legend.fontsize: small
 
